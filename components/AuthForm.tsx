@@ -1,0 +1,112 @@
+"use client"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { useForm } from "react-hook-form"
+import { z } from "zod"
+import { Button } from "@/components/ui/button"
+import {
+  Form
+ 
+} from "@/components/ui/form"
+import { Input } from "@/components/ui/input"
+import Image from "next/image";
+import Link from "next/link"
+import { toast } from "sonner"
+import FormField from "./FormField"
+import { useRouter } from "next/navigation"
+
+
+// const formSchema = z.object({
+//   username: z.string().min(2).max(50),
+// })
+
+const authFormSchema=(type:FormType) => {
+  return z.object({
+    name:type==="sign-up"?z.string().min(2).max(50).optional():z.string().optional(),
+    password: z.string().min(8, "Password must be at least 8 characters long"),
+    email: z.string().email("Invalid email address"),
+  })
+}
+const AuthForm = ( {type}:{type:FormType}) => {
+  const router=useRouter();
+  const formSchema = authFormSchema(type)
+  const form = useForm<z.infer<typeof formSchema>>({
+  resolver: zodResolver(formSchema),
+  defaultValues: {
+    name: "",
+    email: "",
+    password: "",
+  },
+})
+
+ 
+  // 2. Define a submit handler.
+  function onSubmit(values: z.infer<typeof formSchema>) {
+    try{
+      if(type==='sign-up'){
+        // Handle sign-up logic here
+        console.log("Sign-up values:", values);
+        toast.success("Account created successfully!");
+        router.push('/sign-in'); // Redirect to sign-in page after successful sign-up
+      }
+      else{
+        // Handle sign-in logic here
+        console.log("Sign-in values:", values);
+        toast.success("Signed in successfully!");
+        router.push('/'); // Redirect to home page after successful sign-in
+
+      }
+
+    }catch (error) {
+      console.error("Error submitting form:", error);
+      toast.error("An error occurred while submitting the form. Please try again.");
+    }
+    
+  }
+  const isSignin = type === "sign-in"
+ //const isSignup = type === "signup"
+  return (
+    <div className="card-border lg:min-w-[566px]"> <Form {...form}>
+      <div className="flex flex-col gap-6 card py-14 px-10">
+        <div className="flex flex-rowgap-2 justify-center">
+           <Image src="/logo.svg" alt="logo" height={32} width={38} />
+           <h2 className="text-primary-100">Prep.io</h2>
+        </div>
+        <h2>Practice Job Interviews with AI</h2>
+       
+      <form onSubmit={form.handleSubmit(onSubmit)} className=" w-full mt-3 form space-y-8">
+        {!isSignin && <FormField
+          control={form.control}
+          name="name"
+          label="Name"
+          placeholder="Enter your name"
+          type="text" />}
+          <FormField
+          control={form.control}
+          name="email"
+          label="Email"
+          placeholder="Enter your Email"
+          type="text" />
+           <FormField
+          control={form.control}
+          name="password"
+          label="Password"
+          
+          placeholder="Enter your password"
+          type="password" />
+    
+        <Button className="btn" type="submit">{isSignin?'Sign-In':'Create an Account'}</Button>
+      </form>
+      </div>
+      
+    </Form>
+    <p className="text-center">{isSignin?'No Account Yet?':'Have an account already'}
+      <Link href={!isSignin ?'/sign-in':'/sign-up'} className="font-bold text-user-primary ml-1 ">{!isSignin?"Sign-in":"Sign-up"}</Link>
+    </p>
+    
+    </div>
+    
+    
+  )
+}
+
+export default AuthForm
