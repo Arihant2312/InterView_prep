@@ -13,6 +13,10 @@ import Link from "next/link"
 import { toast } from "sonner"
 import FormField from "./FormField"
 import { useRouter } from "next/navigation"
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth"
+import { auth } from "@/firebase/client"
+import { signUp, signIn } from "@/lib/actions/auth.action"
+
 
 
 // const formSchema = z.object({
@@ -40,16 +44,43 @@ const AuthForm = ( {type}:{type:FormType}) => {
 
  
   // 2. Define a submit handler.
-  function onSubmit(values: z.infer<typeof formSchema>) {
+ async function onSubmit(values: z.infer<typeof formSchema>) {
     try{
-      if(type==='sign-up'){
+   if (type === 'sign-up') {
+  const { name, email, password } = values;
+
+  // Create user with Firebase Auth
+  const userCredentials = await createUserWithEmailAndPassword(auth, email, password);
+
+  // Save extra user data in Firestore (but NOT password)
+  const result = await signUp({
+    uid: userCredentials.user.uid,
+    name: name!, // using ! means you're certain name isn't null/undefined
+    email,
+  });
+        if(!result?.success){
+          toast.error(result?.message);
+          return;
+        }  
         // Handle sign-up logic here
         console.log("Sign-up values:", values);
         toast.success("Account created successfully!");
         router.push('/sign-in'); // Redirect to sign-in page after successful sign-up
       }
       else{
-        // Handle sign-in logic here
+        // Handle si
+        const {email,password} = values;
+        const userCredentials = await signInWithEmailAndPassword(auth, email, password);
+        const idToken=await userCredentials.user.getIdToken();
+        if(!idToken){
+          toast.error("Failed to sign in. Please try again.");
+          return;
+        }
+        await signIn({
+          email,
+          idToken,
+        });
+        // cosnt gn-in logic here
         console.log("Sign-in values:", values);
         toast.success("Signed in successfully!");
         router.push('/'); // Redirect to home page after successful sign-in
