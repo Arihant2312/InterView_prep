@@ -57,6 +57,7 @@ const AuthForm = ( {type}:{type:FormType}) => {
     uid: userCredentials.user.uid,
     name: name!, // using ! means you're certain name isn't null/undefined
     email,
+    password, // add password to match SignUpParams
   });
         if(!result?.success){
           toast.error(result?.message);

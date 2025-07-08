@@ -112,6 +112,7 @@ export async function getCurrentUser(): Promise<User | null> {
       .doc(decodedClaims.uid)
       .get();
     if (!userRecord.exists) return null;
+   // console.log("User record:", userRecord.data());
 
     return {
       ...userRecord.data(),
@@ -119,6 +120,7 @@ export async function getCurrentUser(): Promise<User | null> {
     } as User;
   } catch (error) {
     console.log(error);
+    
 
     // Invalid or expired session
     return null;
