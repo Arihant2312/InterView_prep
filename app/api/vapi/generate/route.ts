@@ -71,16 +71,26 @@ Thank you! <3`;
       : techstack;
 
     const interview = {
-      role: role,
-      type: type,
-      level: level,
-      techstack: techstackArray,
-      questions: parsedQuestions,
-      userId: userid,
-      finalized: true,
-      coverImage: getRandomInterviewCover(),
-      createdAt: new Date().toISOString(),
-    };
+  role: role,
+  type: type,
+  level: level,
+  techstack: techstackArray,
+  questions: parsedQuestions,
+  userId: userid,
+  finalized: true,
+  coverImage: getRandomInterviewCover(),
+  createdAt: new Date().toLocaleString("en-IN", {
+    timeZone: "Asia/Kolkata",
+    year: "numeric",
+    month: "short",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hour12: true,
+  }) + " IST",
+};
+
 
     // Debug: Log the interview object before saving
     console.log("Interview object to save:", interview);
