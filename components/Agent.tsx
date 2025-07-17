@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
-//import { interviewer } from "@/constants";
+import { interviewer } from "@/constants";
 //import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {
@@ -34,6 +34,11 @@ const Agent = ({
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
+    console.log("Agent received userId:", userId);
+    console.log("name :",userName);
+  
+
+  
 
   useEffect(() => {
     const onCallStart = () => {
@@ -90,12 +95,11 @@ const Agent = ({
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
       console.log("handleGenerateFeedback");
 
-      const { success, feedbackId: id } = await createFeedback({
-        interviewId: interviewId!,
-        userId: userId!,
-        transcript: messages,
-        feedbackId,
-      });
+      const { success, id } ={
+        success: true,
+        id:'feedback-id'
+      
+      };;
 
       if (success && id) {
         router.push(`/interview/${interviewId}/feedback`);
@@ -114,16 +118,22 @@ const Agent = ({
     }
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
-  const handleCall = async () => {
+const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
 
     if (type === "generate") {
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!, {
-        variableValues: {
-          username: userName,
-          userid: userId,
-        },
-      });
+      await vapi.start(
+        undefined,
+        undefined,
+        undefined,
+        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
+        {
+          variableValues: {
+            username: userName,
+            userid: userId,
+          },
+        }
+      );
     } else {
       let formattedQuestions = "";
       if (questions) {
@@ -144,6 +154,7 @@ const Agent = ({
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
+  
 
   return (
     <>
