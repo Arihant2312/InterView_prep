@@ -1,4 +1,10 @@
+//"use client";
+
 import dayjs from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
 import Link from "next/link";
 import Image from "next/image";
 
@@ -6,18 +12,25 @@ import { Button } from "./ui/button";
 import DisplayTechIcons from "./DisplayTechIcons";
 
 import { cn, getRandomInterviewCover } from "@/lib/utils";
+import { getFeedbackByInterviewId } from "@/lib/actions/general.action";
 
-// import { getFeedbackByInterviewId } from "@/lib/feedback";
+// Extend dayjs
+dayjs.extend(customParseFormat);
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 const InterviewCard = async ({
-  id,
+  id: interviewId,
   userId,
   role,
   type,
   techstack,
   createdAt,
 }: InterviewCardProps) => {
-  const feedback =null as Feedback | null;
+  const feedback =
+    userId && interviewId
+      ? await getFeedbackByInterviewId({ interviewId, userId })
+      : null;
 
   const normalizedType = /mix/gi.test(type) ? "Mixed" : type;
 
@@ -28,22 +41,26 @@ const InterviewCard = async ({
       Technical: "bg-light-800",
     }[normalizedType] || "bg-light-600";
 
-  const formattedDate = dayjs(
-    feedback?.createdAt || createdAt || Date.now()
-  ).format("MMM D, YYYY");
+  // ✅ Handle both ISO and "18 Jul 2025, 12:42:49 am IST" style formats
+  const rawDate = feedback?.createdAt || createdAt || new Date().toISOString();
+  const parsedDate = dayjs(rawDate, ["DD MMM YYYY, hh:mm:ss a [IST]", dayjs.ISO_8601]);
+
+  const formattedDate = parsedDate.isValid()
+    ? parsedDate.format("DD MMM YYYY")
+    : "Date unavailable";
 
   return (
     <div className="card-border w-[360px] max-sm:w-full min-h-96">
       <div className="card-interview">
         <div>
-       
+          {/* Type Badge */}
           <div
             className={cn(
               "absolute top-0 right-0 w-fit px-4 py-2 rounded-bl-lg",
               badgeColor
             )}
           >
-            <p className="badge-text ">{normalizedType}</p>
+            <p className="badge-text">{normalizedType}</p>
           </div>
 
           {/* Cover Image */}
@@ -60,38 +77,34 @@ const InterviewCard = async ({
 
           {/* Date & Score */}
           <div className="flex flex-row gap-5 mt-3">
-            <div className="flex flex-row gap-2">
-              <Image
-                src="/calendar.svg"
-                width={22}
-                height={22}
-                alt="calendar"
-              />
+            <div className="flex flex-row gap-2 items-center">
+              <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
               <p>{formattedDate}</p>
             </div>
 
             <div className="flex flex-row gap-2 items-center">
               <Image src="/star.svg" width={22} height={22} alt="star" />
-              <p>{feedback?.totalScore || "---"}/100</p>
+              <p>{feedback?.totalScore ?? "---"}/100</p>
             </div>
           </div>
 
-          {/* Feedback or Placeholder Text */}
+          {/* Feedback Summary */}
           <p className="line-clamp-2 mt-5">
             {feedback?.finalAssessment ||
               "You haven't taken this interview yet. Take it now to improve your skills."}
           </p>
         </div>
 
-        <div className="flex flex-row justify-between">
+        {/* Tech Stack & CTA */}
+        <div className="flex flex-row justify-between items-center mt-6">
           <DisplayTechIcons techStack={techstack} />
 
-          <Button className="btn-primary">
+          <Button asChild className="btn-primary">
             <Link
               href={
                 feedback
-                  ? `/interview/${id}/feedback`
-                  : `/interview/${id}`
+                  ? `/interview/${interviewId}/feedback`
+                  : `/interview/${interviewId}`
               }
             >
               {feedback ? "Check Feedback" : "View Interview"}
