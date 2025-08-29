@@ -9,6 +9,9 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true, // Ignore TypeScript errors during build
   },
+   images: {
+    domains: ['ik.imagekit.io'],
+  },
 };
 
 export default nextConfig;

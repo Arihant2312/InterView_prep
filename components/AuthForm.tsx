@@ -134,12 +134,20 @@ const AuthForm = ({ type }: { type: FormType }) => {
 
           <Button className="btn" type="submit">{isSignin ? 'Sign-In' : 'Create an Account'}</Button>
         </form>
+        <p className="text-center text-xl">
+  {isSignin ? "No account yet?" : "Have an account already?"}
+  <Link
+    href={isSignin ? "/sign-up" : "/sign-in"}
+    className="ml-1 font-semibold text-blue-600 hover:text-blue-800 underline"
+  >
+    {isSignin ? "Sign up" : "Sign in"}
+  </Link>
+</p>
+
       </div>
 
     </Form>
-      <p className="text-center">{isSignin ? 'No Account Yet?' : 'Have an account already'}
-        <Link href={!isSignin ? '/sign-in' : '/sign-up'} className="font-bold text-user-primary ml-1 ">{!isSignin ? "Sign-in" : "Sign-up"}</Link>
-      </p>
+     
 
     </div>
 

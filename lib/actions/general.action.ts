@@ -6,6 +6,27 @@ import { cookies } from "next/headers";
 //import { generateObject } from "ai";
 import { google } from "@ai-sdk/google";
 import { feedbackSchema } from "@/constants";
+// ...existing code...
+
+/**
+ * Get all finalized interviews created by any user.
+ * Returns interviews sorted by newest first.
+ */
+export async function getAllFinalizedInterviews(limit: number = 20): Promise<Interview[] | null> {
+  const interviews = await db
+    .collection("interviews")
+    .where("finalized", "==", true)
+    .orderBy("createdAt", "desc")
+    .limit(limit)
+    .get();
+
+  return interviews.docs.map((doc) => ({
+    id: doc.id,
+    ...doc.data()
+  })) as Interview[];
+}
+
+// ...existing code...
 export async function getInterviewsByUserId(userId:string):Promise<Interview[] |null>{
   const interviews=await db
   .collection("interviews")
