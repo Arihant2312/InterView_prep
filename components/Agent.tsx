@@ -35,8 +35,8 @@ const Agent = ({
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
-    console.log("Agent received userId:", userId);
-    console.log("name :",userName);
+    // console.log("Agent received userId:", userId);
+    // console.log("name :",userName);
   
 
   

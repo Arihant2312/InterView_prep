@@ -87,7 +87,7 @@ const AuthForm = ({ type }: { type: FormType }) => {
           idToken,
         });
         // cosnt gn-in logic here
-        console.log("Sign-in values:", values);
+       
         toast.success("Signed in successfully!");
         router.push('/'); // Redirect to home page after successful sign-in
 

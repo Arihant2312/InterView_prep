@@ -1,6 +1,7 @@
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 
+import { signOut } from "@/lib/actions/auth.action";
 import { db } from "@/firebase/admin";
 import { getRandomInterviewCover } from "@/lib/utils";
 
