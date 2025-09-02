@@ -90,7 +90,7 @@ const navItems = [
             <button  className="border border-slate-600 hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition">
               Contact
             </button></Link>
-            <Link href="#start">
+            <Link href="/interview">
               <button className="bg-white hover:shadow-[0px_0px_30px_14px] shadow-[0px_0px_30px_7px] hover:shadow-white/50 shadow-white/50 text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-100 transition duration-300">
                 Start An Interview
               </button>
