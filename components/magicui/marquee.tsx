@@ -42,7 +42,7 @@ export function Marquee({
   ...props
 }: MarqueeProps) {
   return (
-    <div
+    <div id="stories"
       {...props}
       className={cn(
         "group flex overflow-hidden p-2 [--duration:40s] [--gap:1rem] [gap:var(--gap)]",

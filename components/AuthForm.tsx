@@ -86,12 +86,15 @@ const AuthForm = ({ type }: { type: FormType }) => {
           email,
           idToken,
         });
+        // console.log("email",email);
+        // console.log("password",password);
         // cosnt gn-in logic here
        
         toast.success("Signed in successfully!");
         router.push('/'); // Redirect to home page after successful sign-in
 
       }
+    
 
     } catch (error) {
       console.error("Error submitting form:", error);

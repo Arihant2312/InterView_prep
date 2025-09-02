@@ -14,9 +14,15 @@ const Hero = () => {
     await signOut();      // remove cookie on server
     router.push("/sign-in"); // redirect to login page
   }
-
+const navItems = [
+  { label: "Your Interviews", href: "#your-interviews" },
+  { label: "Stories", href: "#stories" },
+  { label: "Latest Hiring", href: "#latest-hiring" },
+];
   return (
-    <section className="relative w-full min-h-screen flex flex-col items-center bg-black text-white pb-16 pt-8 bg-[url(https://raw.githubusercontent.com/prebuiltui/prebuiltui/main/assets/hero/bg-gradient-3.svg)] bg-center bg-cover">
+  <section className="relative w-full flex flex-col items-center bg-gradient-to-t from-black to-gray-900 text-white 
+  py-16 md:min-h-screen md:py-10 px-4 bg-center bg-cover">
+
       {/* Logout Button - Absolute Top Right */}
       <button
         onClick={handleLogout}
@@ -58,26 +64,33 @@ const Hero = () => {
             />
           </Link>
 
+
           {/* Desktop Menu */}
-          <div className="hidden md:flex items-center gap-6 ml-7">
-            {["Your Interviews", "Stories", "Latest Hiring"].map((item) => (
-              <a key={item} href="#" className="relative overflow-hidden h-6 group">
-                <span className="block group-hover:-translate-y-full transition-transform duration-300">
-                  {item}
-                </span>
-                <span className="block absolute top-full left-0 group-hover:translate-y-[-100%] transition-transform duration-300">
-                  {item}
-                </span>
-              </a>
-            ))}
-          </div>
+       <div className="hidden md:flex items-center gap-6 ml-7">
+  {navItems.map((item) => (
+    <a
+      key={item.label}
+      href={item.href}
+      className="relative overflow-hidden h-6 group"
+    >
+      <span className="block group-hover:-translate-y-full transition-transform duration-300">
+        {item.label}
+      </span>
+      <span className="block absolute top-full left-0 group-hover:translate-y-[-100%] transition-transform duration-300">
+        {item.label}
+      </span>
+    </a>
+  ))}
+</div>
+
 
           {/* Desktop Buttons */}
           <div className="hidden ml-14 md:flex items-center gap-4">
-            <button className="border border-slate-600 hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition">
+            <Link href="#footer-link">
+            <button  className="border border-slate-600 hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition">
               Contact
-            </button>
-            <Link href="/interview">
+            </button></Link>
+            <Link href="#start">
               <button className="bg-white hover:shadow-[0px_0px_30px_14px] shadow-[0px_0px_30px_7px] hover:shadow-white/50 shadow-white/50 text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-100 transition duration-300">
                 Start An Interview
               </button>
@@ -103,57 +116,44 @@ const Hero = () => {
           </button>
 
           {/* Mobile Menu */}
-          {menuOpen && (
-            <div className="absolute top-0 left-0 bg-black w-full h-full flex flex-col items-center justify-center gap-4 text-base">
-              {["Products", "Customer Stories", "Pricing", "Docs"].map((item) => (
-                <a
-                  key={item}
-                  href="#"
-                  onClick={() => setMenuOpen(false)}
-                  className="hover:text-indigo-600"
-                >
-                  {item}
-                </a>
-              ))}
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="border border-slate-600 hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition"
-              >
-                Contact
-              </button>
-              <button
-                onClick={() => setMenuOpen(false)}
-                className="bg-white hover:shadow-[0px_0px_30px_14px] shadow-[0px_0px_30px_7px] hover:shadow-white/50 shadow-white/50 text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-100 transition duration-300"
-              >
-                Get Started
-              </button>
-            </div>
-          )}
+         {/* Mobile Menu */}
+{menuOpen && (
+  <div className="absolute top-0 left-0 bg-black w-full h-full flex flex-col items-center justify-center gap-6 text-lg">
+    {navItems.map((item) => (
+      <a
+        key={item.label}
+        href={item.href}
+        onClick={() => setMenuOpen(false)} // close menu on click
+        className="hover:text-indigo-400 transition"
+      >
+        {item.label}
+      </a>
+    ))}
+
+    <Link href="#footer-link"><button
+      onClick={() => setMenuOpen(false)}
+      className="border border-slate-600 hover:bg-slate-800 px-4 py-2 rounded-full text-sm font-medium transition"
+    >
+      Contact
+    </button></Link>
+   <Link href="/interview">
+    <button
+      onClick={() => setMenuOpen(false)}
+      
+      className="bg-white hover:shadow-[0px_0px_30px_14px] shadow-[0px_0px_30px_7px] hover:shadow-white/50 shadow-white/50 text-black px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-100 transition duration-300"
+    >
+      Get Started
+    </button></Link>
+  </div>
+)}
+
         </nav>
       </div>
 
       {/* Hero Content */}
-      <div className="flex items-center gap-2 border border-white/15 rounded-full px-4 py-2 text-sm mt-24">
-        <p>Explore how we help grow brands.</p>
-        <a href="#" className="flex items-center gap-1 font-medium">
-          Read more
-          <svg
-            className="mt-0.5"
-            width="19"
-            height="19"
-            viewBox="0 0 19 19"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3.959 9.5h11.083m0 0L9.501 3.96m5.541 5.54-5.541 5.542"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </a>
+      <div className="flex items-center    px-4 py-2 text-sm mt-24">
+       
+      
       </div>
 
       <h1 className="text-4xl md:text-6xl text-center font-semibold max-w-3xl mt-5 bg-gradient-to-r from-white to-[#748298] text-transparent bg-clip-text">
@@ -169,7 +169,7 @@ const Hero = () => {
 
       {/* Buttons */}
       <div className="grid grid-cols-2 gap-2 mt-8 text-sm">
-        <Link href="/interview">
+        <Link href="#start">
           <button className="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 transition rounded-full">
             Get Started
           </button>
