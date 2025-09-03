@@ -192,7 +192,7 @@ const handleCall = async () => {
       </div>
 
       {messages.length > 0 && (
-        <div className="transcript-border">
+        <div className="transcript-border mt-3">
           <div className="transcript">
             <p
               key={lastMessage}
@@ -207,7 +207,7 @@ const handleCall = async () => {
         </div>
       )}
 
-      <div className="w-full flex justify-center">
+      <div className="w-full flex justify-center mt-8">
         {callStatus !== "ACTIVE" ? (
           <button className="relative btn-call" onClick={() => handleCall()}>
             <span
