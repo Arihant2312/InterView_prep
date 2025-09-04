@@ -42,6 +42,8 @@ export async function signUp(params: SignUpParams) {
     await db.collection("users").doc(uid).set({
       name,
       email,
+      credits:3,
+      createdAt: new Date().toISOString(),
       // profileURL,
       // resumeURL,
     });
@@ -116,8 +118,10 @@ export async function getCurrentUser(): Promise<User | null> {
    // console.log("User record:", userRecord.data());
 
     return {
-      ...userRecord.data(),
+      ...(userRecord.data() as User),
       id: userRecord.id,
+      credits: userRecord.data()?.credits || 0,
+      email: userRecord.data()?.email || "",
     } as User;
   } catch (error) {
     console.log(error);

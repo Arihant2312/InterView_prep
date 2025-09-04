@@ -3,11 +3,11 @@
 import Image from "next/image";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { interviewer } from "@/constants";
-import { create } from "domain";
 import { createFeedback } from "@/lib/actions/general.action";
 
 enum CallStatus {
@@ -35,41 +35,24 @@ const Agent = ({
   const [messages, setMessages] = useState<SavedMessage[]>([]);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [lastMessage, setLastMessage] = useState<string>("");
-    // console.log("Agent received userId:", userId);
-    // console.log("name :",userName);
-  
 
-  
-
+  // ------------------- Event Listeners -------------------
   useEffect(() => {
-    const onCallStart = () => {
-      setCallStatus(CallStatus.ACTIVE);
-    };
-
-    const onCallEnd = () => {
-      setCallStatus(CallStatus.FINISHED);
-    };
+    const onCallStart = () => setCallStatus(CallStatus.ACTIVE);
+    const onCallEnd = () => setCallStatus(CallStatus.FINISHED);
 
     const onMessage = (message: Message) => {
-      if (message.type === "transcript" && message.transcriptType === "final") {
-        const newMessage = { role: message.role, content: message.transcript };
-        setMessages((prev) => [...prev, newMessage]);
+      if (message.type === "transcript") {
+        const content = message.transcript || message.text || "";
+        if (content.trim() !== "") {
+          setMessages((prev) => [...prev, { role: message.role, content }]);
+        }
       }
     };
 
-    const onSpeechStart = () => {
-      console.log("speech start");
-      setIsSpeaking(true);
-    };
-
-    const onSpeechEnd = () => {
-      console.log("speech end");
-      setIsSpeaking(false);
-    };
-
-    const onError = (error: Error) => {
-      console.log("Error:", error);
-    };
+    const onSpeechStart = () => setIsSpeaking(true);
+    const onSpeechEnd = () => setIsSpeaking(false);
+    const onError = (error: Error) => console.error("VAPI Error:", error);
 
     vapi.on("call-start", onCallStart);
     vapi.on("call-end", onCallEnd);
@@ -88,15 +71,15 @@ const Agent = ({
     };
   }, []);
 
+  // ------------------- Feedback Generation -------------------
   useEffect(() => {
     if (messages.length > 0) {
       setLastMessage(messages[messages.length - 1].content);
     }
 
     const handleGenerateFeedback = async (messages: SavedMessage[]) => {
-      console.log("handleGenerateFeedback");
-
-      const { success, feedbackId:id } =await createFeedback({
+      toast.success("Feedback is been generating!", { duration: 6000 });
+      const { success, feedbackId: id } = await createFeedback({
         interviewId: interviewId!,
         userId: userId!,
         transcript: messages,
@@ -104,51 +87,48 @@ const Agent = ({
       });
 
       if (success && id) {
+        
+        toast.success("Feedback generated successfully!");
         router.push(`/interview/${interviewId}/feedback`);
       } else {
-        console.log("Error saving feedback");
+        console.error("Error saving feedback");
         router.push("/");
       }
     };
 
-    if (callStatus === CallStatus.FINISHED) {
-      if (type === "generate") {
-        router.push("/");
-      } else {
-        handleGenerateFeedback(messages);
-      }
+    if (callStatus === CallStatus.FINISHED && type !== "generate") {
+      handleGenerateFeedback(messages);
     }
   }, [messages, callStatus, feedbackId, interviewId, router, type, userId]);
 
-const handleCall = async () => {
+  // ------------------- Call Handlers -------------------
+  const handleCall = async () => {
     setCallStatus(CallStatus.CONNECTING);
+    const toastId = toast.loading("Monitoring interview...");
 
-    if (type === "generate") {
-      await vapi.start(
-        undefined,
-        undefined,
-        undefined,
-        process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
-        {
-          variableValues: {
-            username: userName,
-            userid: userId,
-          },
-        }
-      );
-    } else {
-      let formattedQuestions = "";
-      if (questions) {
-        formattedQuestions = questions
-          .map((question) => `- ${question}`)
-          .join("\n");
+    try {
+      if (type === "generate") {
+        await vapi.start(
+          undefined,
+          undefined,
+          undefined,
+          process.env.NEXT_PUBLIC_VAPI_WORKFLOW_ID!,
+          {
+            variableValues: { username: userName, userid: userId },
+          }
+        );
+
+        vapi.on("call-end", () => {
+          toast.success("Interview generated successfully!", { id: toastId });
+          router.push("/#interview-section"); // redirect after generation
+        });
+      } else if (questions) {
+        const formattedQuestions = questions.map((q) => `- ${q}`).join("\n");
+        await vapi.start(interviewer, { variableValues: { questions: formattedQuestions } });
       }
-
-      await vapi.start(interviewer, {
-        variableValues: {
-          questions: formattedQuestions,
-        },
-      });
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to generate interview.", { id: toastId });
     }
   };
 
@@ -156,21 +136,16 @@ const handleCall = async () => {
     setCallStatus(CallStatus.FINISHED);
     vapi.stop();
   };
-  
 
+  // ------------------- JSX -------------------
   return (
     <>
+      <Toaster position="top-center" />
       <div className="call-view">
         {/* AI Interviewer Card */}
         <div className="card-interviewer">
           <div className="avatar">
-            <Image
-              src="/ai-avatar.png"
-              alt="profile-image"
-              width={65}
-              height={54}
-              className="object-cover"
-            />
+            <Image src="/ai-avatar.png" alt="profile-image" width={65} height={54} className="object-cover" />
             {isSpeaking && <span className="animate-speak" />}
           </div>
           <h3>AI Interviewer</h3>
@@ -179,54 +154,32 @@ const handleCall = async () => {
         {/* User Profile Card */}
         <div className="card-border">
           <div className="card-content">
-            <Image
-              src="/user-avatar.png"
-              alt="profile-image"
-              width={539}
-              height={539}
-              className="rounded-full object-cover size-[120px]"
-            />
+            <Image src="/user-avatar.png" alt="profile-image" width={120} height={120} className="rounded-full object-cover" />
             <h3>{userName}</h3>
           </div>
         </div>
       </div>
 
+      {/* Transcript Display */}
       {messages.length > 0 && (
         <div className="transcript-border mt-3">
           <div className="transcript">
-            <p
-              key={lastMessage}
-              className={cn(
-                "transition-opacity duration-500 opacity-0",
-                "animate-fadeIn opacity-100"
-              )}
-            >
+            <p key={lastMessage} className={cn("transition-opacity duration-500 opacity-0", "animate-fadeIn opacity-100")}>
               {lastMessage}
             </p>
           </div>
         </div>
       )}
 
+      {/* Call Controls */}
       <div className="w-full flex justify-center mt-8">
-        {callStatus !== "ACTIVE" ? (
-          <button className="relative btn-call" onClick={() => handleCall()}>
-            <span
-              className={cn(
-                "absolute animate-ping rounded-full opacity-75",
-                callStatus !== "CONNECTING" && "hidden"
-              )}
-            />
-
-            <span className="relative">
-              {callStatus === "INACTIVE" || callStatus === "FINISHED"
-                ? "Call"
-                : ". . ."}
-            </span>
+        {callStatus !== CallStatus.ACTIVE ? (
+          <button className="relative btn-call" onClick={handleCall} disabled={callStatus !== CallStatus.INACTIVE}>
+            <span className={cn("absolute animate-ping rounded-full opacity-75", callStatus !== CallStatus.CONNECTING && "hidden")} />
+            <span className="relative">{callStatus === CallStatus.INACTIVE || callStatus === CallStatus.FINISHED ? "Call" : "Generating..."}</span>
           </button>
         ) : (
-          <button className="btn-disconnect cursor-pointer" onClick={() => handleDisconnect()}>
-            End
-          </button>
+          <button className="btn-disconnect cursor-pointer" onClick={handleDisconnect}>End</button>
         )}
       </div>
     </>

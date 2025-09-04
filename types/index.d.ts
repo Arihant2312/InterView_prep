@@ -37,6 +37,8 @@ interface User {
   name: string;
   email: string;
   id: string;
+  credits: number;
+   createdAt?: Timestamp | string;
 }
 
 interface InterviewCardProps {

@@ -27,6 +27,7 @@ const page = async({params}:RouteParams) => {
   const feedback=await getFeedbackByInterviewId({
     interviewId: id,
     userId: user?.id!,
+    createdAt: new Date().toISOString()
   })
   console.log("feedback", feedback);
    return (
@@ -53,15 +54,11 @@ const page = async({params}:RouteParams) => {
           </div>
 
           {/* Date */}
-          <div className="flex flex-row gap-2">
-            <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
-            <p>
-               {feedback?.createdAt && dayjs(feedback.createdAt, 'DD MMM YYYY, hh:mm:ss a [IST]').isValid()
-    ? dayjs(feedback.createdAt, 'DD MMM YYYY, hh:mm:ss a [IST]')
-        .format('DD MMM YYYY')
-    : 'N/A'}
-            </p>
-          </div>
+       {/* Date */}
+<div className="flex flex-row gap-2 items-center">
+  <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
+  <p>{feedback?.createdAt ?? "N/A"}</p>
+</div>
         </div>
       </div>
 
@@ -70,17 +67,18 @@ const page = async({params}:RouteParams) => {
       <p>{feedback?.finalAssessment}</p>
 
       {/* Interview Breakdown */}
-      <div className="flex flex-col gap-4">
-        <h2>Breakdown of the Interview:</h2>
-        {feedback?.categoryScores?.map((category, index) => (
-          <div key={index}>
-            <p className="font-bold">
-              {index + 1}. {category.name} ({category.score}/100)
-            </p>
-            <p>{category.comment}</p>
-          </div>
-        ))}
-      </div>
+<div className="flex flex-col gap-4">
+  <h2>Breakdown of the Interview:</h2>
+  {feedback?.categoryScores?.map((category, index) => (
+  <div key={index}>
+    <p className="font-bold">
+      {index + 1}. {category.name} ({category.score}/100)
+    </p>
+    <p>{category.comment}</p>
+  </div>
+))}
+</div>
+
 
       <div className="flex flex-col gap-3">
         <h3>Strengths</h3>
@@ -127,4 +125,4 @@ const page = async({params}:RouteParams) => {
 
 
 
-export default page
+export default page 

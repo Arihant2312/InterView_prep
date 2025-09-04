@@ -31,6 +31,7 @@
     "react-dark-mode-toggle": "^0.2.0",
     "react-dom": "^19.0.0",
     "react-hook-form": "^7.58.0",
+    "react-hot-toast": "^2.6.0",
     "react-toggle-dark-mode": "^1.1.1",
     "react-use-measure": "^2.1.7",
     "sonner": "^2.0.5",

@@ -42,15 +42,27 @@ const InterviewCard = async ({
     }[normalizedType] || "bg-light-600";
 
   // ✅ Handle both ISO and "18 Jul 2025, 12:42:49 am IST" style formats
-  const rawDate = feedback?.createdAt || createdAt || new Date().toISOString();
-  const parsedDate = dayjs(rawDate, ["DD MMM YYYY, hh:mm:ss a [IST]", dayjs.ISO_8601]);
+const rawDate = feedback?.createdAt || createdAt || new Date().toISOString();
 
-  const formattedDate = parsedDate.isValid()
-    ? parsedDate.format("DD MMM YYYY")
-    : "Date unavailable";
+let formattedDate = "Date unavailable";
+try {
+  const dateObj = new Date(rawDate);
+
+  if (!isNaN(dateObj.getTime())) {
+    const day = String(dateObj.getDate()).padStart(2, "0");
+    const month = String(dateObj.getMonth() + 1).padStart(2, "0"); // months are 0-based
+    const year = dateObj.getFullYear();
+    formattedDate = `${day}/${month}/${year}`;
+  } else {
+    // fallback: just show raw date string
+    formattedDate = rawDate;
+  }
+} catch (err) {
+  console.error("Date parsing failed:", rawDate, err);
+}
 
   return (
-    <div className="card-border w-[360px] max-sm:w-full min-h-96">
+    <div className="card-border w-[400px] max-sm:w-full min-h-110">
       <div className="card-interview">
         <div>
           {/* Type Badge */}
@@ -79,7 +91,7 @@ const InterviewCard = async ({
           <div className="flex flex-row gap-5 mt-3">
             <div className="flex flex-row gap-2 items-center">
               <Image src="/calendar.svg" width={22} height={22} alt="calendar" />
-              <p>{formattedDate}</p>
+              <p className="text-sm ">{formattedDate}</p>
             </div>
 
             <div className="flex flex-row gap-2 items-center">
@@ -89,7 +101,7 @@ const InterviewCard = async ({
           </div>
 
           {/* Feedback Summary */}
-          <p className="line-clamp-2 mt-5">
+          <p className="line-clamp-2 mt-7">
             {feedback?.finalAssessment ||
               "You haven't taken this interview yet. Take it now to improve your skills."}
           </p>
@@ -107,7 +119,7 @@ const InterviewCard = async ({
                   : `/interview/${interviewId}`
               }
             >
-              {feedback ? "Check Feedback" : "View Interview"}
+              {feedback ? "Check Feedback" : "Take the Interview"}
             </Link>
           </Button>
         </div>

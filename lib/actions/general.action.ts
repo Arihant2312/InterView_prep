@@ -64,64 +64,110 @@ export async function getInterviewsById(id:string):Promise<Interview |null>{
   return interview.data()  as Interview | null;
 
 }
-export async function createFeedback(params:CreateFeedbackParams){
-  const { interviewId, userId, transcript} = params;
-  try{
-    const formattedTranscript = transcript.map((sentence): { role: string; content: string } => ({
+export async function createFeedback(params: CreateFeedbackParams) {
+  const { interviewId, userId, transcript } = params;
+
+  try {
+    if (!transcript || transcript.length === 0) {
+      return {
+        success: false,
+        message: "Transcript is empty. Cannot generate feedback.",
+      };
+    }
+
+    const formattedTranscript = transcript.map((sentence) => ({
       role: sentence.role,
-      content: sentence.content
+      content: sentence.content.trim(),
     }));
-      const { object:{totalScore,categoryScores,strengths,areasForImprovement,finalAssessment} } = await generateObject({
-      model: google("gemini-2.0-flash-001", {
-        structuredOutputs: false,
-      }),
+
+    const formattedTranscriptString = formattedTranscript
+      .map((s) => `${s.role.toUpperCase()}: ${s.content}`)
+      .join("\n");
+
+    // Generate structured feedback using Gemini
+    const {
+      object: {
+        totalScore,
+        categoryScores,
+        strengths,
+        areasForImprovement,
+        finalAssessment,
+      },
+    } = await generateObject({
+      model: google("gemini-2.5-flash", { structuredOutputs: false }),
       schema: feedbackSchema,
       prompt: `
-        You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories. Be thorough and detailed in your analysis. Don't be lenient with the candidate. If there are mistakes or areas for improvement, point them out.
-        Transcript:
-        ${formattedTranscript}
+You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories.
+Be thorough and detailed in your analysis. Give fair scores from 0 to 100 based on the quality of responses.
+Do not artificially inflate the scores. Provide constructive feedback, strengths, and areas for improvement.
 
-        Please score the candidate from 0 to 100 in the following areas. Do not add categories other than the ones provided:
-        - **Communication Skills**: Clarity, articulation, structured responses.
-        - **Technical Knowledge**: Understanding of key concepts for the role.
-        - **Problem-Solving**: Ability to analyze problems and propose solutions.
-        - **Cultural & Role Fit**: Alignment with company values and job role.
-        - **Confidence & Clarity**: Confidence in responses, engagement, and clarity.
-        `,
+Transcript:
+${formattedTranscriptString}
+
+Please score the candidate from 0 to 100 in the following areas. Only use these categories:
+- Communication Skills: Clarity, articulation, structured responses.
+- Technical Knowledge: Understanding of key concepts for the role.
+- Problem-Solving: Ability to analyze problems and propose solutions.
+- Cultural & Role Fit: Alignment with company values and job role.
+- Confidence & Clarity: Confidence in responses, engagement, and clarity.
+`,
       system:
-        "You are a professional interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories",
+        "You are a professional interviewer analyzing a mock interview. Provide structured category scores, strengths, areas for improvement, and a final assessment.",
     });
-    const feedback=await db.collection('feedback').add({
+
+    // Convert AI scores to numeric and transform to array
+    const numericTotalScore = totalScore
+      ? typeof totalScore === "number"
+        ? totalScore
+        : Number(totalScore)
+      : 0;
+
+    const categoryArray: { name: string; score: number; comment: string }[] = [];
+
+    if (categoryScores && typeof categoryScores === "object") {
+      for (const [name, value] of Object.entries(categoryScores)) {
+        const score = typeof value === "number" ? value : Number(value);
+        if (!isNaN(score)) {
+          categoryArray.push({
+            name,
+            score,
+            comment: "", // You can add AI-generated comment if available
+          });
+        }
+      }
+    }
+
+    // Save feedback in Firestore
+    const feedback = await db.collection("feedback").add({
       interviewId,
       userId,
-      totalScore,
-      categoryScores, 
-      areasForImprovement,
-      strengths,
-      finalAssessment,
-      createdAt: new Date().toLocaleString("en-IN", {
-        timeZone: "Asia/Kolkata",
-        year: "numeric",
-        month: "short",
-        day: "2-digit",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: true,
-      }) + " IST",
-      
+      totalScore: numericTotalScore,
+      categoryScores: categoryArray, // <-- array now
+      areasForImprovement: areasForImprovement || [],
+      strengths: strengths || [],
+      finalAssessment: finalAssessment || "",
+      createdAt:
+        new Date().toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          year: "numeric",
+          month: "short",
+          day: "2-digit",
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+          hour12: true,
+        }) + " IST",
     });
+
     await db.collection("interviews").doc(interviewId).update({
       hasFeedback: true,
     });
-    
+
     return {
       success: true,
       feedbackId: feedback.id,
     };
-
-  
-  } catch(e){
+  } catch (e) {
     console.error("Error creating feedback:", e);
     return {
       success: false,
@@ -129,6 +175,8 @@ export async function createFeedback(params:CreateFeedbackParams){
     };
   }
 }
+
+
 export async function getFeedbackByInterviewId(params:GetFeedbackByInterviewIdParams):Promise<Feedback|null>{
   const { interviewId,userId}=params;
   const feedback=await db
