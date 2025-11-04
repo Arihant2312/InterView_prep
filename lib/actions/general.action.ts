@@ -105,6 +105,7 @@ Be thorough and detailed in your analysis. Give fair scores from 0 to 100 based 
 The final assessment must include:
 1.  **Strengths:** A bulleted list of the candidate's strong points.
 2.  **Areas for Improvement (AFI):** A structured section for improvement with detailed guidance.
+use differnt bullet points for improvemnt areas section and font for detailed guidance.
 
 For the **Areas for Improvement**, provide a structured list. For **each improvement area**, you must include a dedicated sub-section titled **"Guidance & Resources"** that offers a specific, text description on **how the candidate can improve**, what they should **read**, or any **references/topics** they should study. **Give a detailed review for each improvement.**
 Transcript:
