@@ -97,22 +97,42 @@ export async function createFeedback(params: CreateFeedbackParams) {
       model: google("gemini-2.5-flash", { structuredOutputs: false }),
       schema: feedbackSchema,
       prompt: `
-You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories.
-Be thorough and detailed in your analysis. Give fair scores from 0 to 100 based on the quality of responses.
-Do not artificially inflate the scores. Provide constructive feedback, strengths, and areas for improvement.
+You are asking me to produce the exact prompt structure you provided, which is designed to generate a highly detailed and structured interview analysis.
+Here is the final, complete prompt you can use, ensuring the AI adheres to all your scoring and feedback requirements:
+You are an AI interviewer analyzing a mock interview. Your task is to evaluate the candidate based on structured categories and provide a comprehensive final assessment, including a **realistic Total Score out of 10** (using a float, e.g., 7.5/10).
+Be thorough and detailed in your analysis. Give fair scores from 0 to 100 based on the quality of responses for each category. **Do not artificially inflate the scores.**
 
+The final assessment must include:
+1.  **Strengths:** A bulleted list of the candidate's strong points.
+2.  **Areas for Improvement (AFI):** A structured section for improvement with detailed guidance.
+
+For the **Areas for Improvement**, provide a structured list. For **each improvement area**, you must include a dedicated sub-section titled **"Guidance & Resources"** that offers a specific, text description on **how the candidate can improve**, what they should **read**, or any **references/topics** they should study. **Give a detailed review for each improvement.**
 Transcript:
 ${formattedTranscriptString}
 
-Please score the candidate from 0 to 100 in the following areas. Only use these categories:
+Please score the candidate from 0 to 10 in the following areas. Only use these categories:
 - Communication Skills: Clarity, articulation, structured responses.
 - Technical Knowledge: Understanding of key concepts for the role.
 - Problem-Solving: Ability to analyze problems and propose solutions.
 - Cultural & Role Fit: Alignment with company values and job role.
 - Confidence & Clarity: Confidence in responses, engagement, and clarity.
+
+Output format:
+1. A clean table:
+| Category | Description | Score (/10) |
+|-----------|--------------|-------------|
+| Communication Skills | ... | 7.8 |
+| Technical Knowledge | ... | 8.3 |
+| Problem-Solving | ... | 7.5 |
+| Cultural & Role Fit | ... | 8.0 |
+| Confidence & Clarity | ... | 8.1 |
+2. Total Score: X.X/10
 `,
-      system:
-        "You are a professional interviewer analyzing a mock interview. Provide structured category scores, strengths, areas for improvement, and a final assessment.",
+   system: `
+You are a professional interviewer evaluating a candidate's performance in a mock or real interview.
+Your role is to analyze responses objectively and assign realistic, decimal-based scores out of 10 for each category.
+Maintain a formal, concise tone and provide constructive feedback in a structured format.
+`,
     });
 
     // Convert AI scores to numeric and transform to array
