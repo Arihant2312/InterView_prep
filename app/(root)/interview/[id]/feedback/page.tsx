@@ -49,7 +49,7 @@ const page = async({params}:RouteParams) => {
               <span className="text-primary-200 font-bold">
                 {feedback?.totalScore}
               </span>
-              /100
+              /10
             </p>
           </div>
 
