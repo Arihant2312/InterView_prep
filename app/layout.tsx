@@ -3,6 +3,8 @@ import { Mona_Sans } from "next/font/google";
 import "./globals.css";
 import { Toaster } from "sonner";
 import { Poppins } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
+
 // import DotGrid from "@/components/magicui/Backgrounds/DotGrid/DotGrid"; // Uncomment if you want DotGrid everywhere
 
 const monaSans = Mona_Sans({
@@ -31,6 +33,7 @@ export default function RootLayout({
         {/* <DotGrid className="fixed inset-0 -z-10 h-screen w-screen" dotSize={8} gap={24} baseColor="#3b82f6" activeColor="#06b6d4" /> */}
         {children}
         <Toaster />
+        <Analytics />
       </body>
     </html>
   );
